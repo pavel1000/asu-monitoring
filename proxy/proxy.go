@@ -15,7 +15,7 @@ var (
 	pass  = os.Getenv("PROXY_PASS")
 )
 
-// Check verify working of proxy.asu.ru
+// Check verifies working of proxy.asu.ru
 func Check() bool {
 	tr := &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
@@ -25,7 +25,7 @@ func Check() bool {
 		IdleConnTimeout:    20 * time.Second,
 	}
 
-	hosts := []string{"https://ya.ru", "http://asu.ru", "https://github.com"}
+	hosts := []string{"https://ya.ru", "http://asu.ru"}
 
 	for _, host := range hosts {
 		req, err := http.NewRequest(method, host, nil)
