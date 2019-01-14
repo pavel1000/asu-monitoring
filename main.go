@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/SimePel/asu-monitoring/proxy"
+	"github.com/SimePel/asu-monitoring/web"
 )
 
 var (
@@ -18,6 +19,7 @@ func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/proxy", proxyHandler)
+	http.HandleFunc("/web", webHandler)
 
 	server.ListenAndServe()
 }
@@ -35,5 +37,17 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(
 		Proxy{
 			Status: proxy.Check(),
+		})
+}
+
+// Web struct is wrapper for json
+type Web struct {
+	Status bool `json:"status"`
+}
+
+func webHandler(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(
+		Web{
+			Status: web.Check(),
 		})
 }
