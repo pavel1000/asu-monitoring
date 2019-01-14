@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/SimePel/asu-monitoring/mail"
 	"github.com/SimePel/asu-monitoring/proxy"
 	"github.com/SimePel/asu-monitoring/web"
 )
@@ -19,6 +20,7 @@ func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/proxy", proxyHandler)
+	http.HandleFunc("/mail", mailHandler)
 	http.HandleFunc("/web", webHandler)
 
 	server.ListenAndServe()
@@ -37,6 +39,18 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(
 		Proxy{
 			Status: proxy.Check(),
+		})
+}
+
+// Mail struct is wrapper for json
+type Mail struct {
+	Status bool `json:"status"`
+}
+
+func mailHandler(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(
+		Mail{
+			Status: mail.Check(),
 		})
 }
 
