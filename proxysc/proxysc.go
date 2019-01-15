@@ -1,4 +1,4 @@
-package proxy
+package proxysc
 
 import (
 	"log"
@@ -15,11 +15,11 @@ var (
 	pass  = os.Getenv("PROXY_PASS")
 )
 
-// Check verifies working of proxy.asu.ru
+// Check verifies working of proxy-sc.asu.ru
 func Check() []byte {
 	tr := &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + login + ":" + pass + "@proxy.asu.ru:3168")
+			return url.Parse("http://" + login + ":" + pass + "@proxy-sc.asu.ru:3168")
 		},
 		DisableCompression: true,
 		IdleConnTimeout:    20 * time.Second,
@@ -40,6 +40,6 @@ func Check() []byte {
 		}
 	}
 
-	log.Println("proxy.asu.ru успешно работает!")
+	log.Println("proxy-sc.asu.ru успешно работает!")
 	return []byte("true")
 }

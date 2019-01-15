@@ -1,4 +1,4 @@
-package mail
+package mx
 
 import (
 	"log"
@@ -9,13 +9,13 @@ import (
 const recipient = "rozhkov@mc.asu.ru"
 
 var (
-	login = os.Getenv("MAIL_LOGIN")
-	pass  = os.Getenv("MAIL_PASS")
+	login = os.Getenv("MX_LOGIN")
+	pass  = os.Getenv("MX_PASS")
 )
 
-// Check verifies working of ASU's mail in mail.asu.ru
+// Check verifies working of ASU's mail in mx.asu.ru
 func Check() []byte {
-	auth := smtp.PlainAuth("", login, pass, "mail.asu.ru")
+	auth := smtp.PlainAuth("", login, pass, "mx.asu.ru")
 
 	to := []string{recipient}
 	msg := []byte("To: " + recipient + "\r\n" +
@@ -23,12 +23,12 @@ func Check() []byte {
 		"\r\n" +
 		"There is nothing interesting.\r\n")
 
-	err := smtp.SendMail("mail.asu.ru:25", auth, "Checker@asu.ru", to, msg)
+	err := smtp.SendMail("mx.asu.ru:25", auth, "Checker@asu.ru", to, msg)
 	if err != nil {
 		log.Println("unable to send email. ", err)
 		return []byte("false")
 	}
 
-	log.Println("Почта на mail.asu.ru успешно работает!")
+	log.Println("Почта на mx.asu.ru успешно работает!")
 	return []byte("true")
 }

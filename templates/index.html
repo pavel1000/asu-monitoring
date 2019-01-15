@@ -10,9 +10,7 @@
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
   </head>
   <body>
-    <script src="../assets/js/proxy.js"></script>
-    <script src="../assets/js/mail.js"></script>
-    <script src="../assets/js/web.js"></script>
+    <script src="../assets/js/services.js"></script>
     <div class="columns is-mobile is-centered">
       <div class="column is-half">
         <nav class="level">
@@ -31,9 +29,8 @@
         </nav>
         <h3 class="title is-6">Что это за сайт?</h3>
         <p style="margin-bottom: 1.5rem">Данный сайт предназначен для проверки работоспособности сервисов АГУ.
-          Если что-то горит красным, значит данный сервис недоступен и восстановление уже ведется. Если все огоньки зеленые, то есть
-          все работает в штатном режиме, но у вас по каким-то причинам не работает один из нижеприведенных сервисов,
-          тогда звоните на номера:
+          Если что-то горит красным, значит данный сервис недоступен и восстановление уже ведется. Если все огоньки зеленые, значит все
+          работает в штатном режиме.
         </p>
         <h3 class="title is-5" style="margin-bottom: 1.4rem">Статус сервисов</h3>
         <p class="service">
@@ -43,10 +40,40 @@
           Proxy
         </p>
         <p class="service">
+          <span id="proxy_class" class="icon has-text-success">
+            <i class="fas fa-circle"></i>
+          </span>
+          Proxy-class
+        </p>
+        <p class="service">
+          <span id="proxy_kc" class="icon has-text-success">
+            <i class="fas fa-circle"></i>
+          </span>
+          Proxy-kc
+        </p>
+        <p class="service">
+          <span id="proxy_dc" class="icon has-text-success">
+            <i class="fas fa-circle"></i>
+          </span>
+          Proxy-dc
+        </p>
+        <p class="service">
+          <span id="proxy_sc" class="icon has-text-success">
+            <i class="fas fa-circle"></i>
+          </span>
+          Proxy-sc
+        </p>
+        <p class="service">
           <span id="mail" class="icon has-text-success">
             <i class="fas fa-circle"></i>
           </span>
-          Mail
+          Mail in mail.asu.ru
+        </p>
+        <p class="service">
+          <span id="mx" class="icon has-text-success">
+            <i class="fas fa-circle"></i>
+          </span>
+          Mail in mx.asu.ru
         </p>
         <p class="service">
           <span id="web" class="icon has-text-success">
