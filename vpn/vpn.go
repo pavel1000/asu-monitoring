@@ -6,8 +6,13 @@ import (
 	"os/exec"
 )
 
+// VPN struct
+type VPN struct {
+	Name string
+}
+
 // Check verifies working of the vpn.asu.ru
-func Check() []byte {
+func (VPN) Check() []byte {
 	cmd := exec.Command("sudo", "pon", "asuvpn")
 	err := cmd.Run()
 	if err != nil {
@@ -37,4 +42,9 @@ func Check() []byte {
 
 	log.Println("vpn.asu.ru работает в штатном режиме!")
 	return []byte("true")
+}
+
+// GetName returns "vpn" always
+func (vpn VPN) GetName() string {
+	return vpn.Name
 }

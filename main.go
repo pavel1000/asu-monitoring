@@ -7,13 +7,8 @@ import (
 	"net/http"
 
 	"github.com/SimePel/asu-monitoring/mail"
-	"github.com/SimePel/asu-monitoring/mx"
-	"github.com/SimePel/asu-monitoring/vpn"
 	"github.com/SimePel/asu-monitoring/proxy"
-	"github.com/SimePel/asu-monitoring/proxyclass"
-	"github.com/SimePel/asu-monitoring/proxykc"
-	"github.com/SimePel/asu-monitoring/proxydc"
-	"github.com/SimePel/asu-monitoring/proxysc"
+	"github.com/SimePel/asu-monitoring/vpn"
 	"github.com/SimePel/asu-monitoring/web"
 	"github.com/bradfitz/gomemcache/memcache"
 )
@@ -36,7 +31,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	t.ExecuteTemplate(w, "index", nil)
 }
 
-// Statuses of the services
+// Statuses of the each service
 type Statuses struct {
 	Proxy      string `json:"proxy"`
 	ProxyClass string `json:"proxy_class"`
@@ -46,84 +41,68 @@ type Statuses struct {
 	Mail       string `json:"mail"`
 	MX         string `json:"mx"`
 	Web        string `json:"web"`
-	VPN		   string `json:"vpn"`
+	VPN        string `json:"vpn"`
 }
 
 func servicesHandler(w http.ResponseWriter, r *http.Request) {
 	mc := memcache.New("localhost:11211")
-	items, err := mc.GetMulti([]string{"proxy", "proxy_dc", "proxy_sc", "proxy_kc", "proxy_class", "mail", "mx", "web", "vpn"})
+	items, err := mc.GetMulti([]string{"proxy", "proxy-dc", "proxy-sc", "proxy-kc", "proxy-class", "mail", "mx", "web", "vpn"})
 	if err != nil {
 		log.Fatal("unable to get items from memcached. ", err)
 	}
 
 	if len(items) == 0 {
-		proxyItem := memcache.Item{
-			Key:        "proxy",
-			Value:      proxy.Check(),
-			Expiration: 600,
+		servicesChan := make(chan Service, 9)
+		itemsChan := make(chan *memcache.Item, 9)
+
+		for w := 1; w <= 9; w++ {
+			go worker(servicesChan, itemsChan)
 		}
-		proxyClassItem := memcache.Item{
-			Key:        "proxy_class",
-			Value:      proxyclass.Check(),
-			Expiration: 600,
+
+		servicesChan <- proxy.Proxy{Name: "proxy"}
+		servicesChan <- proxy.Proxy{Name: "proxy-class"}
+		servicesChan <- proxy.Proxy{Name: "proxy-kc"}
+		servicesChan <- proxy.Proxy{Name: "proxy-dc"}
+		servicesChan <- proxy.Proxy{Name: "proxy-sc"}
+		servicesChan <- mail.Mail{Name: "mail"}
+		servicesChan <- mail.Mail{Name: "mx"}
+		servicesChan <- web.Web{Name: "web"}
+		servicesChan <- vpn.VPN{Name: "vpn"}
+		close(servicesChan)
+
+		for i := 1; i <= 9; i++ {
+			mc.Set(<-itemsChan)
 		}
-		proxyKCItem := memcache.Item{
-			Key:        "proxy_kc",
-			Value:      proxykc.Check(),
-			Expiration: 600,
-		}
-		proxyDCItem := memcache.Item{
-			Key:        "proxy_dc",
-			Value:      proxydc.Check(),
-			Expiration: 600,
-		}
-		proxySCItem := memcache.Item{
-			Key:        "proxy_sc",
-			Value:      proxysc.Check(),
-			Expiration: 600,
-		}
-		mailItem := memcache.Item{
-			Key:        "mail",
-			Value:      mail.Check(),
-			Expiration: 600,
-		}
-		mxItem := memcache.Item{
-			Key:        "mx",
-			Value:      mx.Check(),
-			Expiration: 600,
-		}
-		webItem := memcache.Item{
-			Key:        "web",
-			Value:      web.Check(),
-			Expiration: 600,
-		}
-		vpnItem := memcache.Item{
-			Key:        "vpn",
-			Value:      vpn.Check(),
-			Expiration: 600,
-		}
-		mc.Set(&proxyItem)
-		mc.Set(&proxyClassItem)
-		mc.Set(&proxyKCItem)
-		mc.Set(&proxyDCItem)
-		mc.Set(&proxySCItem)
-		mc.Set(&mailItem)
-		mc.Set(&mxItem)
-		mc.Set(&webItem)
-		mc.Set(&vpnItem)		
 	}
 
-	items, _ = mc.GetMulti([]string{"proxy", "proxy_dc", "proxy_sc", "proxy_kc", "proxy_class", "mail", "mx", "web", "vpn"})
+	items, _ = mc.GetMulti([]string{"proxy", "proxy-dc", "proxy-sc", "proxy-kc", "proxy-class", "mail", "mx", "web", "vpn"})
 	json.NewEncoder(w).Encode(
 		Statuses{
 			Proxy:      string(items["proxy"].Value),
-			ProxyClass: string(items["proxy_class"].Value),
-			ProxyKC:    string(items["proxy_kc"].Value),
-			ProxyDC:    string(items["proxy_dc"].Value),
-			ProxySC:    string(items["proxy_sc"].Value),
+			ProxyClass: string(items["proxy-class"].Value),
+			ProxyKC:    string(items["proxy-kc"].Value),
+			ProxyDC:    string(items["proxy-dc"].Value),
+			ProxySC:    string(items["proxy-sc"].Value),
 			Mail:       string(items["mail"].Value),
-			MX:       	string(items["mx"].Value),
+			MX:         string(items["mx"].Value),
 			Web:        string(items["web"].Value),
 			VPN:        string(items["vpn"].Value),
 		})
+}
+
+// Service has Check method that verifies working of it
+// and GetName method that give you name of the service
+type Service interface {
+	Check() []byte
+	GetName() string
+}
+
+func worker(services <-chan Service, items chan<- *memcache.Item) {
+	for service := range services {
+		items <- &memcache.Item{
+			Key:        service.GetName(),
+			Value:      service.Check(),
+			Expiration: 600,
+		}
+	}
 }

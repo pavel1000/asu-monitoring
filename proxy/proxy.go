@@ -15,11 +15,16 @@ var (
 	pass  = os.Getenv("PROXY_PASS")
 )
 
-// Check verifies working of proxy.asu.ru
-func Check() []byte {
+// Proxy struct
+type Proxy struct {
+	Name string
+}
+
+// Check verifies working of different proxies
+func (p Proxy) Check() []byte {
 	tr := &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + login + ":" + pass + "@proxy.asu.ru:3168")
+			return url.Parse("http://" + login + ":" + pass + "@" + p.Name + ".asu.ru:3168")
 		},
 		DisableCompression: true,
 		IdleConnTimeout:    20 * time.Second,
@@ -40,6 +45,11 @@ func Check() []byte {
 		}
 	}
 
-	log.Println("proxy.asu.ru успешно работает!")
+	log.Println(p.Name + ".asu.ru успешно работает!")
 	return []byte("true")
+}
+
+// GetName returns name of the proxy server
+func (p Proxy) GetName() string {
+	return p.Name
 }

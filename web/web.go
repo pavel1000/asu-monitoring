@@ -9,8 +9,13 @@ const method = "GET"
 
 var hosts = []string{"https://asu.ru", "http://umc22.asu.ru", "http://journal.asu.ru", "http://support.asu.ru"}
 
+// Web struct
+type Web struct {
+	Name string
+}
+
 // Check verifies working of the ASU's websites
-func Check() []byte {
+func (Web) Check() []byte {
 	badReqs := 0
 	for _, host := range hosts {
 		resp, err := http.Get(host)
@@ -28,4 +33,9 @@ func Check() []byte {
 
 	log.Println("Все странички успешно откликаются!")
 	return []byte("true")
+}
+
+// GetName returns "web" always
+func (w Web) GetName() string {
+	return w.Name
 }
