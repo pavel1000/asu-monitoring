@@ -1,11 +1,16 @@
 package web
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 )
 
-const method = "GET"
+const (
+	everythingIsNotOK int = iota
+	somethingIsNotOK
+	allIsOK
+)
 
 var hosts = []string{"https://asu.ru", "http://umc22.asu.ru", "http://journal.asu.ru", "http://support.asu.ru"}
 
@@ -14,9 +19,16 @@ type Web struct {
 	Name string
 }
 
+// WebsitesInfo keeps: urls, that give different status from 200
+// and status of all websites in general.
+type WebsitesInfo struct {
+	BadURLs      []string `json:"bad_urls"`
+	GlobalStatus int      `json:"status"`
+}
+
 // Check verifies working of the ASU's websites
 func (Web) Check() []byte {
-	badReqs := 0
+	web := WebsitesInfo{}
 	for _, host := range hosts {
 		resp, err := http.Get(host)
 		if err != nil {
@@ -24,15 +36,28 @@ func (Web) Check() []byte {
 		}
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("%v вернула код %v\n", host, resp.StatusCode)
-			badReqs++
+			web.BadURLs = append(web.BadURLs, host)
 		}
 	}
-	if badReqs == len(hosts) {
-		return []byte("false")
+
+	if len(web.BadURLs) == len(hosts) {
+		log.Println("Все странички не доступны!")
+		web.GlobalStatus = everythingIsNotOK
+	}
+	if len(web.BadURLs) > 0 && len(web.BadURLs) < len(hosts) {
+		log.Println("Некоторые странички не доступны!")
+		web.GlobalStatus = somethingIsNotOK
+	}
+	if len(web.BadURLs) == 0 {
+		log.Println("Все странички успешно работают!")
+		web.GlobalStatus = allIsOK
 	}
 
-	log.Println("Все странички успешно откликаются!")
-	return []byte("true")
+	b, err := json.Marshal(web)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return b
 }
 
 // GetName returns "web" always
