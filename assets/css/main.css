@@ -4,6 +4,15 @@ h3 {
     padding-bottom: 8px;
 }
 
+html {
+    height: 100%;
+    background: linear-gradient(to top left, rgba(190, 59, 99, 0.8), rgba(55, 95, 133, 0.5));
+}
+
+.level {
+    margin: 3% auto;
+}
+
 .service {
     margin-bottom: 0.6rem;
 }
